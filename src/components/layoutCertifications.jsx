@@ -1,56 +1,65 @@
-// CertificationsList.jsx
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import GetCertificationData from '../services/getCertificationData';
+import React, { useState } from 'react';
 
-/**
- * Componente que renderiza una lista de certificaciones.
- * @param {Array} certifications - Lista de certificaciones para mostrar.
- */
 const CertificationsList = ({ certifications }) => {
-    const navigate = useNavigate();
+    const getImageUrl = (url) => {
+        if (!url) return null;
+        return url.startsWith('/') ? url : `/${url}`;
+    };
 
-    const handleCertificationClick = async (certificationId) => {
-        try {
-            console.log("Click en certificación:", certificationId);
-            navigate(`/certificacion?id=${certificationId}`);
-            const data = await GetCertificationData.getCertificationById(certificationId);
-            //console.log("DATA TRAIDA", data);
-        } catch (error) {
-            console.error('Error al manejar el click: ', error);
-        }
+    const handleImageError = (e) => {
+        console.error('Error loading image:', e.target.src);
+        e.target.style.opacity = '0.5';
+        e.target.style.backgroundColor = '#f0f0f0';
     };
 
     return (
         <div className="wrapper-certifications">
-            {certifications.map(certification => {
-                const topicName = certification.tema_certificacion?.nombre || 'Sin categoría';
-                
-                return (
-                    <div
-                        key={certification.id}
-                        className='certification-card'
-                        onClick={() => handleCertificationClick(certification.id)}
-                        style={{cursor: 'pointer'}}
-                    >
-                        <div className="container-img-card">
-                            <img
-                                src={certification.url_imagen_universidad_certificacion}
-                                alt="imagen-certificacion"
-                            />
+            {certifications.length === 0 ? (
+                <p>No hay certificaciones disponibles</p>
+            ) : (
+                certifications.map(certification => {
+                    const topicName = certification.tema_certificacion?.nombre || 'Sin categoría';
+
+                    return (
+                        <div
+                            key={certification.id}
+                            className="certification-card"
+                            style={{ cursor: 'pointer' }}
+                        >
+                            <div className="container-img-card">
+                                <img
+                                    src={certification.url_imagen_universidad_certificacion}
+                                    alt="imagen-certificacion"
+                                    onError={handleImageError}
+                                    style={{
+                                        display: 'block',
+                                        maxWidth: '100%',
+                                        height: 'auto'
+                                    }}
+                                />
+                            </div>
+
+
                             <h3>{certification.nombre}</h3>
                             <div className="tag-platform">
                                 <img
-                                    src={certification.url_imagen_plataforma_certificacion}
+                                    src={getImageUrl(certification.url_imagen_plataforma_certificacion)}
                                     alt="platform-logo"
+                                    onError={handleImageError}
+                                    style={{
+                                        display: 'block',
+                                        maxWidth: '100%',
+                                        height: 'auto'
+                                    }}
                                 />
                             </div>
-                            <div className="tag-category">{certification.tema_certificacion.nombre}</div>
+                            <div className="tag-category">{topicName}</div>
                         </div>
-                    </div>
-                );
-            })}
+                    );
+                })
+            )}
         </div>
+
     );
 };
 

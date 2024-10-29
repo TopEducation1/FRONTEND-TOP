@@ -27,59 +27,128 @@ function LibraryPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Estados para la paginación
+    const [pagination, setPagination ]  = useState({
+        count: 0,
+        current_page: 1, 
+        total_pages: 1,
+    });
+       
 
-
-        
-    // Cargar todas las certificaciones disponibles sin filtro
-    const loadAllCertifications = async () => {
+    const loadCertifications = async (page = 1, pageSize = 16) => {
         try {
             setLoading(true);
-            const data = await CertificationsFetcher.getAllCertifications();;
-            setCertifications(data);
-            setLoading(false);
+            let fetchData;
+
+
+
+            if (Object.keys(selectedTags).length > 0) {
+                fetchData = await tagFilterService.filterByTags(selectedTags, page, pageSize);
+
+                // Actualizar la url con los parametros de filtro
+                const queryString = tagFilterService.buildQueryString(selectedTags);
+                window.history.pushState({}, '', `/library/filter/${queryString}`);
+            } else {
+                fetchData = await CertificationsFetcher.getAllCertifications(page, pageSize);
+                window.history.pushState({}, '', '/library');
+            }
+
+
+            if (fetchData && fetchData.results) {
+
+                setCertifications(fetchData.results);
+                setPagination({
+                    count: fetchData.count,
+                    current_page: page, 
+                    total_pages: Math.ceil(fetchData.count/pageSize)
+                });
+            }
         } catch (error) {
-            console.error('Error al cargar certificaciones: ', error);
+            console.error('Error al cargar las certificaciones:', error);
+            setError('Error al cargar las certificaciones');
+        } finally {
             setLoading(false);
         }
     };
 
-    /**
-     * Carga las certificaciones filtradas por etiquetas
-     * @param {Object} tags - Objeto con las etiquetas seleccionadas por el usuario
+     useEffect(() => {
+        loadCertifications(1);
+     }, []);
+
+
+     useEffect(() => {
+        loadCertifications(1);
+     }, [selectedTags]);
+   
+    
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= pagination.total_pages && !loading) {
+            loadCertifications(newPage); 
+        }
+    };
+
+       /**
+     * Maneja el clic en una etiqueta de filtro
+     * @param {string} category - Categoría de la etiqueta
+     * @param {string} tag - Etiqueta seleccionada
      */
+       const handleTagClick = (category, tag) => {
+        setSelectedTags(prevTags => {
 
-    const loadFilteredCertifications = async (tags) => {
-        try {
-            setLoading(true);
-            const filteredData = await tagFilterService.filterByTags(tags);
-            setCertifications(filteredData);
-            setLoading(false);
 
-            // Actualizar la URL con los parámetros de filtro
-            const queryString = tagFilterService.buildQueryString(tags);
-            window.history.pushState({}, '', `/library/filter/${queryString}`);
-        } catch (error) {
-            console.error('Error al filtrar certificaciones:', error);
-            setError('Error al filtrar las certificaciones');
-            setLoading(false);
-        }
+            // Copiar el estado previo de los tags para no mutarlo
+            const updatedTags = {...prevTags };
+
+            // Set a partir de la lista actual o una vacia
+            const tagSet = new Set(updatedTags[category] || []);
+
+            tagSet.add(tag);
+            updatedTags[category] = [...tagSet];
+            return updatedTags;
+            
+        });
     };
 
-    // Cargar todas las certificaciones al montar el componente
-    useEffect(() => {
-        loadAllCertifications();
-    }, []);
+    
+    const removeTag = (category, tagToRemove) => {
+        setSelectedTags(prevTags => {
+            const updatedTags = {...prevTags};
 
 
-    // Cargar certificaciones filtradas cuando cambian las etiquetas seleccionadas
-    useEffect(() => {
-        if(Object.keys(selectedTags).length > 0) {
-            loadFilteredCertifications(selectedTags);
-        } else {
-            loadAllCertifications();
-            window.history.pushState({}, '', '/library');
-        }
-    }, [selectedTags]);
+            if (updatedTags[category]) {
+                
+                updatedTags[category] = updatedTags[category].filter(tag => tag !== tagToRemove);
+
+
+                if (updatedTags[category].length === 0) {
+                    delete updatedTags[category];  // Eliminamos la categoría si no quedan tags
+                }
+            }
+            return updatedTags;
+        })
+    };
+
+
+
+    const PaginationControls = () => (
+        <div className="container-buttons-pagination">
+          <button
+            onClick={() => handlePageChange(pagination.current_page - 1)}
+            disabled={pagination.current_page === 1 || loading}
+          >
+            Anterior
+          </button>
+          <span style={{ padding: '0.5rem 15px' }}>
+            Página {pagination.current_page} de {pagination.total_pages}
+          </span>
+          <button
+            onClick={() => handlePageChange(pagination.current_page + 1)}
+            disabled={pagination.current_page === pagination.total_pages || loading}
+          >
+            Siguiente
+          </button>
+        </div>
+      );
 
 
     // Ajustar el tamaño del contenedor del indice despues de un segundo
@@ -94,16 +163,14 @@ function LibraryPage() {
         }
     }, []);
 
+
+
     // Definición del array sections para categorias de filtro
     const sections = [
         {
             title: "Tema",
             
-            subsections: ["Arte y Humanidades", "Negocios", "Ciencias de la Computación", "Ciencias de Datos", "Tecnologias de Información", "Salud", "Matemáticas y Logica", "Desarrollo Personal", "Ciencías, Física e Ingenieria", "Ciencias Sociales", "Aprendizaje de un Idioma"]
-        },
-        {
-            title: "Habilidad",
-            subsections: ["Bienestar", "Estrategia", "Liderazgo", "Productividad", "Personas y Cultura", "Diversidad, Equidad e Inclusión", "Trabajo en Equipo", "Crecimiento Personal", "Creatividad", "Comunicación"]
+            subsections: ["Arte y Humanidades", "Negocios", "Ciencias de la Computación", "Ciencias de Datos", "Tecnología de la información", "Salud", "Matemáticas y Logica", "Desarrollo Personal", "Ciencías, Física e Ingenieria", "Ciencias Sociales", "Aprendizaje de un Idioma"]
         },
         {
             title: "Plataforma",
@@ -126,7 +193,7 @@ function LibraryPage() {
                 },
                 {
                     title: "Latinoamérica",
-                    subsections: ["Universidad de chile", "Universidad Nacional de Colombia", "Tecnológico de Monterrey", "Pontifica Universidad Católica del Perú", "Universidad Nacional Autónoma de Mexico", "Universidad Anáhuac", "SAE Institute México", "Pontificia Universidad Católica de Chile", "Universidad de Palermo", "Universidad de los Andes", "Universidad Austral"]
+                    subsections: ["Universidad de chile", "Universidad Nacional de Colombia", "Tecnológico de Monterrey", "Pontificia Universidad Católica del Perú", "Universidad Nacional Autónoma de Mexico", "Universidad Anáhuac", "SAE Institute México", "Pontificia Universidad Católica de Chile", "Universidad de Palermo", "Universidad de los Andes", "Universidad Austral"]
                 },
                 {
                     title: "Norteamérica",
@@ -180,98 +247,6 @@ function LibraryPage() {
                 : [...prev, index]
         );
     };
-
-
-     /**
-     * Maneja el clic en una etiqueta de filtro
-     * @param {string} category - Categoría de la etiqueta
-     * @param {string} tag - Etiqueta seleccionada
-     */
-    const handleTagClick = (category, tag) => {
-        setSelectedTags(prevTags => {
-
-
-            // Copiar el estado previo de los tags para no mutarlo
-            const updatedTags = {...prevTags };
-
-            // Set a partir de la lista actual o una vacia
-            const tagSet = new Set(updatedTags[category] || []);
-
-            tagSet.add(tag);
-            updatedTags[category] = [...tagSet];
-            return updatedTags;
-            
-        });
-    };
-
-
-    
-
-    const handleFilter = async () =>  {
-        if (Object.keys(selectedTags).length > 0) {
-            try {
-
-                const queryString = tagFilterService.buildQueryString(selectedTags);
-
-
-                window.history.pushState(
-                    {},
-                    '',
-                    `/library/filter/${queryString}`
-                );
-
-
-                const filteredData = await tagFilterService.filterByTags(selectedTags);
-                setFilteredResults(filteredData);
-                
-            } catch (error) {
-                console.error("Error al filtrar: ", error);
-            }
-        } else {
-            window.history.pushState({}, '', '/library')
-            fetchedCertifications();
-        }
-    };
-
-    const fetchedCertifications = async () => {
-        
-        try {
-            const fetchData = await  CertificationsFetcher();
-            setCertifications(fetchData);
-        } catch (error) {
-            console.error('Error al obtener certificados: ', error);
-        } 
-
-    }
-
-    useEffect(() => {
-        if (Object.keys(selectedTags).length > 0) {
-            handleFilter();
-        } else {
-            fetchedCertifications();
-        }
-    }, [selectedTags]);
-
-    const removeTag = (category, tagToRemove) => {
-        setSelectedTags(prevTags => {
-            const updatedTags = {...prevTags};
-
-
-            if (updatedTags[category]) {
-                
-                updatedTags[category] = updatedTags[category].filter(tag => tag !== tagToRemove);
-
-
-                if (updatedTags[category].length === 0) {
-                    delete updatedTags[category];  // Eliminamos la categoría si no quedan tags
-                }
-            }
-            return updatedTags;
-        })
-    };
-
-    
-    
 
     const renderSubsections = (category, subsections) => {
         return subsections.map((subsection, subIndex) => {
@@ -328,21 +303,26 @@ function LibraryPage() {
             {!isMobileView && SearchBar}
 
             <div className="container-tags">
-            {Object.entries(selectedTags).map(([category, tags], index) => (
-       tags.map((tag, tagIndex) => (
-           <div key={`${category}-${tagIndex}`} className="tag">
-               <span>{tag}</span>
-               <button onClick={() => removeTag(category, tag)} className="remove-tag-button">
-                   <svg xmlns="http://www.w3.org/2000/svg"  width="15"  height="15"  viewBox="0 0 24 24"  fill="none"  stroke="black"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-x">
-                       <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                       <path d="M18 6l-12 12" />
-                       <path d="M6 6l12 12" />
-                   </svg>
-               </button>
-           </div>
-       ))
-   ))}
-            </div>
+    {Object.keys(selectedTags).length === 0 || Object.values(selectedTags).every(tags => tags.length === 0) ? (
+        <p>Aún no has seleccionado tags</p>
+    ) : (
+        Object.entries(selectedTags).map(([category, tags], index) => (
+            tags.map((tag, tagIndex) => (
+                <div key={`${category}-${tagIndex}`} className="tag">
+                    <span>{tag}</span>
+                    <button onClick={() => removeTag(category, tag)} className="remove-tag-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-x">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                            <path d="M18 6l-12 12" />
+                            <path d="M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            ))
+        ))
+    )}
+</div>
+
 
             <div className="container-buttons-reponsive-index">
                 <button id="button-filter" onClick={openIndexResponsiveMenu}>
@@ -432,6 +412,7 @@ function LibraryPage() {
             <div className="certifications-container">
 
                 <CertificationsList certifications={certifications} />
+                <PaginationControls />
 
             </div>
         </>

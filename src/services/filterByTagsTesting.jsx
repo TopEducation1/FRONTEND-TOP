@@ -11,15 +11,18 @@ class TagFilterService {
     }
 
 
-    buildQueryString(tags) {
+    buildQueryString(tags, page= 1, pageSize = 16) {
         const queryParts = [];
+
+        queryParts.push(`page=${page}`);
+        queryParts.push(`page_size=${pageSize}`);
 
 
         Object.entries(tags).forEach(([category, tagList]) => {
             if(tagList && tagList.length > 0) {
-                
+                // Convertir la categoria al formato esperado para el backend
                 const categoryParam = category.toLowerCase();
-
+                // Verificar el formato de los tags
                 const tagsString = tagList.map(tag => encodeURIComponent(tag)).join(',');
                 queryParts.push(`${categoryParam}=${tagsString}`);
             }
@@ -29,10 +32,14 @@ class TagFilterService {
     }
 
 
-    async filterByTags(selectedTags) {
+    async filterByTags(selectedTags, page=1, pageSize = 16) {
         try {
-            const queryString = this.buildQueryString(selectedTags);
+
+            console.log('filtering with tags:', selectedTags);
+            const queryString = this.buildQueryString(selectedTags, page, pageSize);
             const url = `${this.baseUrl}${queryString}`;
+
+
 
 
             const response = await fetch(url, {
@@ -42,6 +49,7 @@ class TagFilterService {
                 }
             });
 
+           
 
             if(!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -49,8 +57,17 @@ class TagFilterService {
 
 
             const data = await response.json();
-            console.log("ESTA ES LA DATA FILTRADA");
-            console.log(data);
+            console.log('Filter reponse data:', {
+                count: data.count,
+                resultsCount: data.results?.length,
+                sampleResult : data.results?.[0],
+                imageFields: data.results?.map(cert => ({
+                    id: cert.id,
+                    hasUnivImage: !!cert.url_imagen_universidad_certificacion,
+                    hasEntImage: !!cert.url_imagen_empresa_certificacion,
+                    hasPlatImage: !!cert.url_imagen_plataforma_certificacion,
+                }))
+            })
             return data;
         } catch (error) {
             console.error('Error en TagFilterService: ', error);

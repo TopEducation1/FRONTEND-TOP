@@ -13,8 +13,13 @@ const SearchBar = () => {
 
     // Manejar la escritura en el input 
     const handleWriting = event => {
-        setText(event.target.value);
-        //console.log(text);
+        const newText = event.target.value;
+        setText(newText);
+
+        if(!newText.trim()) {
+            setResults([])
+        }
+         //console.log(text);
     };
 
 
@@ -24,7 +29,7 @@ const SearchBar = () => {
         const fetchResults = async () => {
 
 
-            if (!text) {
+            if (!text.trim()) {
                 // Vaciar resultados si no hay texto
                 setResults([]);
                 return;
@@ -38,10 +43,16 @@ const SearchBar = () => {
 
             } catch (error) {
                 console.error('Error al enviar datos: ', error);
+                setError(error);
+                setResults([]);
             }
         };
 
-        fetchResults();
+        const timeoutId = setTimeout(() => {
+            fetchResults();
+        }, 300)
+
+        return () => clearTimeout(timeoutId);
     }, [text]);
 
     // Manejar el cambio de ancho para controlar la posición de la barra de busqueda
@@ -88,7 +99,7 @@ const SearchBar = () => {
 
             </div>
 
-            {results.length > 0 && (
+            {text.trim() && results.length > 0 && (
 
                 <div className="container-results">
                     {results.map((resultado) => (
