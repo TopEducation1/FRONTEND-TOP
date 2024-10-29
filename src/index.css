@@ -751,7 +751,7 @@ header {
   width: 1220px;
   height: auto;
   top: 320px;
-  left: 280px;
+  left: 300px;
   padding: 10px;
   box-sizing: border-box;
   border-radius: 10px;
@@ -891,7 +891,7 @@ header {
   width: 1190px;
   height: 150px;
   top: 150px;
-  left: 285px;
+  left: 310px;
   box-sizing: border-box;
   overflow-x: hidden;
 }
@@ -1134,11 +1134,12 @@ header {
   max-height: 450px;
   overflow-y: scroll;
   position: relative;
-  top: 300px;
+  top: 400px;
   left: 30px;
   z-index: 99999;
   gap: 20px;
   background-color:#0F090B ;
+  height: calc(100vh-400px);
   
 }
 
@@ -1740,12 +1741,13 @@ header {
 
   .container-results {
     display: flex;
-    top: 2px;
+    top: 100px;
     left: 0;
     width: 100%;
     align-items: center;
     max-height: 2000px;
-    height: calc(100vh-[2px]);
+    height: calc(100vh-2px);
+    
   }
 
   .box-result

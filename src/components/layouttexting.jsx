@@ -1,9 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 const CertificationsList = ({ certifications }) => {
-    const navigate  = useNavigate();
-
     const getImageUrl = (url) => {
         if (!url) return null;
         return url.startsWith('/') ? url : `/${url}`;
@@ -23,19 +20,22 @@ const CertificationsList = ({ certifications }) => {
 
     return (
         <div className="wrapper-certifications">
-            {certifications.map(certification => {
+        {certifications.length === 0 ? (
+            <p>No hay certificaciones disponibles</p>
+        ) : (
+            certifications.map((certification) => {
                 const topicName = certification.tema_certificacion?.nombre || 'Sin categoría';
-                
+
                 return (
                     <div
-                        onClick={() => {handleCertificationClick(certification.id)}}
                         key={certification.id}
-                        className='certification-card'
-                        style={{cursor: 'pointer'}}
+                        className="certification-card"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handleCertificationClick(certification.id)}
                     >
                         <div className="container-img-card">
                             <img
-                                src={getImageUrl(certification.url_imagen_universidad_certificacion)}
+                                src={certification.url_imagen_universidad_certificacion}
                                 alt="imagen-certificacion"
                                 onError={handleImageError}
                                 style={{
@@ -45,6 +45,7 @@ const CertificationsList = ({ certifications }) => {
                                 }}
                             />
                         </div>
+
                         <h3>{certification.nombre}</h3>
                         <div className="tag-platform">
                             <img
@@ -58,11 +59,12 @@ const CertificationsList = ({ certifications }) => {
                                 }}
                             />
                         </div>
-                        <div className="tag-category">{certification.tema_certificacion.nombre}</div>
+                        <div className="tag-category">{topicName}</div>
                     </div>
                 );
-            })}
-        </div>
+            })
+        )}
+    </div>
     );
 };
 

@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import { useSearchParams } from 'react-router-dom';
 
-import getCertificationData from "../services/getCertificationData";
+import getCertificationById from "../services/getCertificationById";
 
 const CertificationPage = () => {
 
@@ -14,7 +14,7 @@ const CertificationPage = () => {
         const loadCertification = async () => {
             try {
                 const id = searchParams.get('id');
-                const data = await getCertificationData.getCertificationById(id);
+                const data = getCertificationById(id);
                 setCertification(data);
                 setLoading(false);
             } catch (error) {
