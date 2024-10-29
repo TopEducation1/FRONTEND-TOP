@@ -1,11 +1,17 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// Servicio para obtener las certificaciones
-import Certifications from "./services/certifications";
 
+import CertificationPage from "./pages/certificationPage";
+
+
+import { usePageLoading } from "./hooks/usePageLoading";
+
+
+import Header from "./components/header.jsx"
+
+import LoadingPage from "./components/LoadingPage.jsx";
 // Componente del encabezado
-import Header from "./components/header";
 
 // Página de la biblioteca
 import LibraryPage from "./pages/library";
@@ -13,17 +19,22 @@ import LibraryPage from "./pages/library";
 // Página de inicio
 import HomePage from "./pages/home";
 
-import LoadingPage from "./components/LoadingPage";
+
 
 function App() {
+
+  const isLoading = usePageLoading();
   return (
     <Router>
-      <LoadingPage />
-      <Header />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/library" element={<LibraryPage />} />
-      </Routes>
+      {isLoading && <LoadingPage />}
+      <div className={isLoading ? 'content-hidden' : 'content-visible'}>
+        <Header />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/library" element={<LibraryPage />} />
+          <Route path="/certificacion" element={<CertificationPage />}/>
+        </Routes>
+      </div>
     </Router>
   );
 }

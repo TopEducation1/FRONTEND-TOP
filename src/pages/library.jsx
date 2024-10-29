@@ -1,26 +1,108 @@
 import React, { useState, useEffect } from "react";
 import { Link } from 'react-router-dom';
-import Certifications from "../services/certifications";
 import Skills from "../services/skillsService";
 import SkillsTags from "../services/skillsService";
 import Universities from "../services/univerisitiesService";
 import Topics from "../services/topicService";
+import tagFilterService from "../services/filterByTagsTesting";
+import CertificationsFetcher from "../services/certificationsFetcher";
+import CertificationsList from "../components/layoutCertifications";
+import SearchBar from "../components/searchBar";
+
+
+/**Pagina de la biblioteca */
 
 function LibraryPage() {
+
+    // Estados de la pagina
     const [width, setWidth] = useState(window.innerWidth);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [barSearchPosition, setBarSearchPosition] = useState(true);
     const [openSections, setOpenSections] = useState([]);
-    const [selectedTags, setSelectedTags] = useState([]);
+    const [selectedTags, setSelectedTags] = useState({});
+    const [isMobileView, setIsMobileView] = useState(false);
+    const [indexPosition, setIndexPosition] = useState(0);
+    const [filteredResults, setFilteredResults] = useState([]);
+    const [certifications, setCertifications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Definición del array sections
+
+
+        
+    // Cargar todas las certificaciones disponibles sin filtro
+    const loadAllCertifications = async () => {
+        try {
+            setLoading(true);
+            const data = await CertificationsFetcher.getAllCertifications();;
+            setCertifications(data);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error al cargar certificaciones: ', error);
+            setLoading(false);
+        }
+    };
+
+    /**
+     * Carga las certificaciones filtradas por etiquetas
+     * @param {Object} tags - Objeto con las etiquetas seleccionadas por el usuario
+     */
+
+    const loadFilteredCertifications = async (tags) => {
+        try {
+            setLoading(true);
+            const filteredData = await tagFilterService.filterByTags(tags);
+            setCertifications(filteredData);
+            setLoading(false);
+
+            // Actualizar la URL con los parámetros de filtro
+            const queryString = tagFilterService.buildQueryString(tags);
+            window.history.pushState({}, '', `/library/filter/${queryString}`);
+        } catch (error) {
+            console.error('Error al filtrar certificaciones:', error);
+            setError('Error al filtrar las certificaciones');
+            setLoading(false);
+        }
+    };
+
+    // Cargar todas las certificaciones al montar el componente
+    useEffect(() => {
+        loadAllCertifications();
+    }, []);
+
+
+    // Cargar certificaciones filtradas cuando cambian las etiquetas seleccionadas
+    useEffect(() => {
+        if(Object.keys(selectedTags).length > 0) {
+            loadFilteredCertifications(selectedTags);
+        } else {
+            loadAllCertifications();
+            window.history.pushState({}, '', '/library');
+        }
+    }, [selectedTags]);
+
+
+    // Ajustar el tamaño del contenedor del indice despues de un segundo
+    useEffect(() => {
+
+        const indexContainer = document.querySelector('.index-container');
+
+        if (indexContainer) {
+            setTimeout(() => {
+                indexContainer.classList.add('moved-index-container');
+            }, 1000)
+        }
+    }, []);
+
+    // Definición del array sections para categorias de filtro
     const sections = [
         {
-            title: "Temas",
-            subsections: ["Artes y Humanidades", "Negocios", "Ciencias de la Computación", "Ciencias de Datos", "Tecnologias de Información", "Salud", "Matemáticas y Logica", "Desarrollo Personal", "Ciencías, Física e Ingenieria", "Ciencias Sociales", "Aprendizaje de un Idioma"]
+            title: "Tema",
+            
+            subsections: ["Arte y Humanidades", "Negocios", "Ciencias de la Computación", "Ciencias de Datos", "Tecnologias de Información", "Salud", "Matemáticas y Logica", "Desarrollo Personal", "Ciencías, Física e Ingenieria", "Ciencias Sociales", "Aprendizaje de un Idioma"]
         },
         {
-            title: "Habilidades",
+            title: "Habilidad",
             subsections: ["Bienestar", "Estrategia", "Liderazgo", "Productividad", "Personas y Cultura", "Diversidad, Equidad e Inclusión", "Trabajo en Equipo", "Crecimiento Personal", "Creatividad", "Comunicación"]
         },
         {
@@ -54,14 +136,28 @@ function LibraryPage() {
         }
     ];
 
+    /**
+     * Abre el menu  del index responsive
+     */
+
     const openIndexResponsiveMenu = () => {
         setIsMenuOpen(true);
     };
 
+
+    /**
+     * Cierre el menu index reponsive
+     */
     const closeIndexResponsiveMenu = () => {
-        console.log("Botón de cerrar menú presionado");
         setIsMenuOpen(false);
     };
+
+
+    /**
+     * Calcula el margen dinámico de una sección del menú de índice
+     * @param {number} index - Índice de la sección
+     * @returns {number} - Valor del margen
+     */
 
     const calculateDynamicMargin = (index) => {
         const section = sections[index];
@@ -71,6 +167,12 @@ function LibraryPage() {
         return baseMargin + numSubsections * marginPerItem;
     };
 
+
+    /**
+     * Alterna la apertura de una sección del menú de índice
+     * @param {number} index - Índice de la sección
+     */
+
     const toggleSection = (index) => {
         setOpenSections(prev =>
             prev.includes(index)
@@ -79,56 +181,99 @@ function LibraryPage() {
         );
     };
 
-    const handleTagClick = (category) => {
+
+     /**
+     * Maneja el clic en una etiqueta de filtro
+     * @param {string} category - Categoría de la etiqueta
+     * @param {string} tag - Etiqueta seleccionada
+     */
+    const handleTagClick = (category, tag) => {
         setSelectedTags(prevTags => {
-            if (!prevTags.includes(category)) {
-                return [...prevTags, category];
-            }
-            return prevTags;
+
+
+            // Copiar el estado previo de los tags para no mutarlo
+            const updatedTags = {...prevTags };
+
+            // Set a partir de la lista actual o una vacia
+            const tagSet = new Set(updatedTags[category] || []);
+
+            tagSet.add(tag);
+            updatedTags[category] = [...tagSet];
+            return updatedTags;
+            
         });
     };
 
-    const removeTag = (categoryToRemove) => {
-        setSelectedTags(prevTags => 
-            prevTags.filter(tag => tag !== categoryToRemove)
-        );
+
+    
+
+    const handleFilter = async () =>  {
+        if (Object.keys(selectedTags).length > 0) {
+            try {
+
+                const queryString = tagFilterService.buildQueryString(selectedTags);
+
+
+                window.history.pushState(
+                    {},
+                    '',
+                    `/library/filter/${queryString}`
+                );
+
+
+                const filteredData = await tagFilterService.filterByTags(selectedTags);
+                setFilteredResults(filteredData);
+                
+            } catch (error) {
+                console.error("Error al filtrar: ", error);
+            }
+        } else {
+            window.history.pushState({}, '', '/library')
+            fetchedCertifications();
+        }
     };
 
-    const searchBar = (
-        <div className={`wrapper-search-bar ${barSearchPosition ? 'desktop-style' : 'mobile-style'}`}>
-            <input 
-                type="text" 
-                placeholder="¿Qué quieres aprender?" 
-                name="text" 
-                className="input" 
-            />
-            <svg 
-                fill="white" 
-                width="20px" 
-                height="20px" 
-                viewBox="0 0 1920 1920" 
-                xmlns="http://www.w3.org/2000/svg"
-            >
-                <path d="M790.588 1468.235c-373.722 0-677.647-303.924-677.647-677.647 0-373.722 303.925-677.647 677.647-677.647 373.723 0 677.647 303.925 677.647 677.647 0 373.723-303.924 677.647-677.647 677.647Zm596.781-160.715c120.396-138.692 193.807-319.285 193.807-516.932C1581.176 354.748 1226.428 0 790.588 0S0 354.748 0 790.588s354.748 790.588 790.588 790.588c197.647 0 378.24-73.411 516.932-193.807l516.028 516.142 79.963-79.963-516.142-516.028Z" fillRule="evenodd"></path>
-            </svg>
-        </div>
-    );
+    const fetchedCertifications = async () => {
+        
+        try {
+            const fetchData = await  CertificationsFetcher();
+            setCertifications(fetchData);
+        } catch (error) {
+            console.error('Error al obtener certificados: ', error);
+        } 
+
+    }
 
     useEffect(() => {
-        const desktopMediaQuery = window.matchMedia('(max-width: 480px)');
-        
-        const handleMediaQueryChange = (event) => {
-            setBarSearchPosition(event.matches);
-        };
+        if (Object.keys(selectedTags).length > 0) {
+            handleFilter();
+        } else {
+            fetchedCertifications();
+        }
+    }, [selectedTags]);
 
-        desktopMediaQuery.addEventListener('change', handleMediaQueryChange);
-        
-        return () => {
-            desktopMediaQuery.removeEventListener('change', handleMediaQueryChange);
-        };
-    }, []);
+    const removeTag = (category, tagToRemove) => {
+        setSelectedTags(prevTags => {
+            const updatedTags = {...prevTags};
 
-    const renderSubsections = (subsections) => {
+
+            if (updatedTags[category]) {
+                
+                updatedTags[category] = updatedTags[category].filter(tag => tag !== tagToRemove);
+
+
+                if (updatedTags[category].length === 0) {
+                    delete updatedTags[category];  // Eliminamos la categoría si no quedan tags
+                }
+            }
+            return updatedTags;
+        })
+    };
+
+    
+    
+
+    const renderSubsections = (category, subsections) => {
         return subsections.map((subsection, subIndex) => {
             if (typeof subsection === "string") {
                 return (
@@ -138,7 +283,7 @@ function LibraryPage() {
                             className="subsection-link" 
                             onClick={(e) => {
                                 e.preventDefault(); 
-                                handleTagClick(subsection);
+                                handleTagClick(category, subsection);
                             }}
                         >
                             {subsection}
@@ -157,7 +302,7 @@ function LibraryPage() {
                                         className="subsection-link" 
                                         onClick={(e) => {
                                             e.preventDefault(); 
-                                            handleTagClick(subsubsection);
+                                            handleTagClick(category, subsubsection);
                                         }}
                                     >
                                         {subsubsection}
@@ -178,33 +323,25 @@ function LibraryPage() {
                 <h2>Biblioteca</h2>
             </div>
 
+            <SearchBar />
+
+            {!isMobileView && SearchBar}
+
             <div className="container-tags">
-                {selectedTags.map((tag, index) => (
-                    <div key={index} className="tag">
-                        <span>{tag}</span>
-                        <button 
-                            onClick={() => removeTag(tag)} 
-                            className="remove-tag-button"
-                        >
-                            <svg 
-                                xmlns="http://www.w3.org/2000/svg"  
-                                width="15"  
-                                height="15"  
-                                viewBox="0 0 24 24"  
-                                fill="none"  
-                                stroke="black"  
-                                strokeWidth="2"  
-                                strokeLinecap="round"  
-                                strokeLinejoin="round"  
-                                className="icon icon-tabler icons-tabler-outline icon-tabler-x"
-                            >
-                                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-                                <path d="M18 6l-12 12" />
-                                <path d="M6 6l12 12" />
-                            </svg>
-                        </button>
-                    </div>
-                ))}
+            {Object.entries(selectedTags).map(([category, tags], index) => (
+       tags.map((tag, tagIndex) => (
+           <div key={`${category}-${tagIndex}`} className="tag">
+               <span>{tag}</span>
+               <button onClick={() => removeTag(category, tag)} className="remove-tag-button">
+                   <svg xmlns="http://www.w3.org/2000/svg"  width="15"  height="15"  viewBox="0 0 24 24"  fill="none"  stroke="black"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-x">
+                       <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                       <path d="M18 6l-12 12" />
+                       <path d="M6 6l12 12" />
+                   </svg>
+               </button>
+           </div>
+       ))
+   ))}
             </div>
 
             <div className="container-buttons-reponsive-index">
@@ -222,7 +359,7 @@ function LibraryPage() {
                     </svg>
                     <span>Filtrar</span>
                 </button>
-                {barSearchPosition && searchBar}
+                {isMobileView && SearchBar}
             </div>
 
             <div className={`sliding-menu-index ${isMenuOpen ? 'open' : ''}`}>
@@ -248,7 +385,7 @@ function LibraryPage() {
                     </svg>
                 </button>
                 <div className="index-container">
-                    {!barSearchPosition && searchBar}
+                    {!barSearchPosition && SearchBar}
                     <div className="category-wrapper">
                         {sections.map((section, index) => (
                             <div 
@@ -283,7 +420,7 @@ function LibraryPage() {
                                 </button>
                                 {openSections.includes(index) && (
                                     <div className="unfold-list">
-                                        {renderSubsections(section.subsections)}
+                                        {renderSubsections(section.title, section.subsections)}
                                     </div>
                                 )}
                             </div>
@@ -293,7 +430,9 @@ function LibraryPage() {
             </div>
 
             <div className="certifications-container">
-                <Certifications />
+
+                <CertificationsList certifications={certifications} />
+
             </div>
         </>
     );
