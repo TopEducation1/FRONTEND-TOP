@@ -2,7 +2,7 @@ import { endpoints } from "../config/api";
 
 const getCertificationById = async (id) => {
     try {
-        const url = endpoints.certificaciones_id;
+        const url = endpoints.certificaciones_id(id);
         const response = await fetch(url);
         
         if (!response.ok) {

@@ -5,7 +5,7 @@ export const endpoints  =  {
     certificaciones: `${API_URL}/certificaciones/`,
     certificationes_tags: `${API_URL}/certificaciones/filter/`,
     certificaciones_busqueda: `${API_URL}/certificaciones/busqueda/`,
-    certificaciones_id: `${API_URL}/certificaciones/${id}/`,
+    certificaciones_id: (id) => `${API_URL}/certificaciones/${id}/`,
     habilidades: `${API_URL}/certificaciones/skills/`,
     temas: `${API_URL}/certificaciones/topics`,
     universidades: `${API_URL}/certificaciones/universities/`
