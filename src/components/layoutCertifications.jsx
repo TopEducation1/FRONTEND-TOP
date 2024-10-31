@@ -39,7 +39,7 @@ const CertificationsList = ({ certifications }) => {
                     >
                         <div className="container-img-card">
                             <img
-                                src={getImageUrl(certification.url_imagen_universidad_certificacion)}
+                                src={getImageUrl(certification.imagen_final)}
                                 alt="imagen-certificacion"
                                 onError={handleImageError}
                                 style={{
