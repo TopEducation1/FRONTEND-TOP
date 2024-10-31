@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
+import { endpoints } from '../config/api';
 
 const Skills = () => {
 
@@ -10,7 +10,7 @@ const Skills = () => {
 
 
     useEffect(() => {
-        fetch('http://localhost:8000/skills/')
+        fetch(endpoints.habilidades)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('BAD REQUEST');

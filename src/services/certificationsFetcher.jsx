@@ -1,7 +1,11 @@
+
+import { endpoints } from "../config/api";
+
 const CertificationsFetcher = {
   async getAllCertifications(page = 1, pageSize = 16) {
     try {
-      const url = new URL('http://localhost:8000/certificaciones/');
+
+      const url = new URL(endpoints.certificaciones);
       url.searchParams.append('page', page);
       url.searchParams.append('page_size', pageSize);
 

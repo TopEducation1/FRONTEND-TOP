@@ -1,6 +1,8 @@
+import { endpoints } from "../config/api";
+
 const getCertificationById = async (id) => {
     try {
-        const url = `http://localhost:8000/certificaciones/${id}/`;
+        const url = endpoints.certificaciones_id;
         const response = await fetch(url);
         
         if (!response.ok) {

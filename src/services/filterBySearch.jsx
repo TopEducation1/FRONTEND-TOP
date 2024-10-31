@@ -1,8 +1,11 @@
+import { endpoints } from "../config/api";
+
+
 const FilterBySearch = {
 
     async getResults(stringQuery) {
         try {
-            const response = await fetch('http://localhost:8000/certificaciones/busqueda/',{
+            const response = await fetch(endpoints.certificaciones_busqueda,{
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

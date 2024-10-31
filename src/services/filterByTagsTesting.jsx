@@ -1,3 +1,5 @@
+import { endpoints } from "../config/api";
+
 const TAG_CATEGORIES =  {
     TEMAS: 'Temas',
     HABILIDADES: 'Habilidades',
@@ -6,7 +8,7 @@ const TAG_CATEGORIES =  {
 };
 
 class TagFilterService {
-    constructor(baseUrl = 'http://localhost:8000/certificaciones/filter/') {
+    constructor(baseUrl = endpoints.certificationes_tags) {
         this.baseUrl = baseUrl;
     }
 

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { endpoints } from '../config/api';
 
 
 const Topics = () => {
@@ -10,7 +11,7 @@ const Topics = () => {
 
 
     useEffect (() => {
-        fetch('http://localhost:8000/topics/')
+        fetch(endpoints.temas)
         .then(response => {
             if(!response.ok) {
                 throw new Error('BAD REQUEST');
