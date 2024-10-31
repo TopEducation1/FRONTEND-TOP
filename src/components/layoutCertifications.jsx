@@ -8,7 +8,7 @@ const CertificationsList = ({ certifications }) => {
         if (!url) return null;
         return url.startsWith('/') ? url : `/${url}`;
     };
-
+    
     const handleImageError = (e) => {
         console.error('Error loading image:', e.target.src);
         // Mantener la imagen pero con un estilo que indique error
