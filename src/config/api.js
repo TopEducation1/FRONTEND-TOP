@@ -1,4 +1,4 @@
-const API_URL = process.env.REACT_APP_API_URL || 'http://backend-top-production-0f82.up.railway.app';
+const API_URL = process.env.REACT_APP_API_URL || 'https://backend-top-production-0f82.up.railway.app';
 
 export const endpoints  =  {
     
