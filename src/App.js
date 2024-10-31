@@ -19,6 +19,8 @@ import LibraryPage from "./pages/library";
 // Página de inicio
 import HomePage from "./pages/home";
 
+// Componente footer
+import Footer from "./components/Footer.jsx";
 
 
 function App() {
@@ -28,12 +30,12 @@ function App() {
     <Router>
       {isLoading && <LoadingPage />}
       <div className={isLoading ? 'content-hidden' : 'content-visible'}>
-        <Header />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/library" element={<LibraryPage />} />
-          <Route path="/certificacion/:id" element={<CertificationPage />}/>
-        </Routes>
+          <Header />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/library" element={<LibraryPage />} />
+            <Route path="/certificacion/:id" element={<CertificationPage />} />
+          </Routes>
       </div>
     </Router>
   );

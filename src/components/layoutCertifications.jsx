@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const CertificationsList = ({ certifications }) => {
-    const navigate  = useNavigate();
+    const navigate = useNavigate();
 
     const getImageUrl = (url) => {
         if (!url) return null;
@@ -17,21 +17,25 @@ const CertificationsList = ({ certifications }) => {
     };
 
     const handleCertificationClick = (certificationId) => {
+
+        console.log(certificationId)
+        if (certificationId) {
+            navigate(`/certificacion/${certificationId}`);
+        }
         
-        navigate('`/certificacion/$id=`')
     }
 
     return (
         <div className="wrapper-certifications">
             {certifications.map(certification => {
                 const topicName = certification.tema_certificacion?.nombre || 'Sin categoría';
-                
+
                 return (
                     <div
-                        onClick={() => {handleCertificationClick(certification.id)}}
+                        onClick={() => { handleCertificationClick(certification.id) }}
                         key={certification.id}
                         className='certification-card'
-                        style={{cursor: 'pointer'}}
+                        style={{ cursor: 'pointer' }}
                     >
                         <div className="container-img-card">
                             <img

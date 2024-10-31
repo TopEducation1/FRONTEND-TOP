@@ -16,10 +16,10 @@ const SearchBar = () => {
         const newText = event.target.value;
         setText(newText);
 
-        if(!newText.trim()) {
+        if (!newText.trim()) {
             setResults([])
         }
-         //console.log(text);
+        //console.log(text);
     };
 
 
@@ -30,6 +30,7 @@ const SearchBar = () => {
 
 
             if (!text.trim()) {
+                
                 // Vaciar resultados si no hay texto
                 setResults([]);
                 return;

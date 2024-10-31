@@ -1,88 +1,148 @@
-import React, {useEffect, useState} from "react";
-import { useSearchParams } from 'react-router-dom';
-
+import React, { useEffect, useState } from "react";
+import { useParams } from 'react-router-dom';
 import getCertificationById from "../services/getCertificationById";
 
 const CertificationPage = () => {
-
-    const [searchParams] = useSearchParams();
-    const [certification, setCertification] = useState({});
+    const { id } = useParams();
+    const [certification, setCertification] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const loadCertification = async () => {
             try {
-                const id = searchParams.get('id');
-                const data = getCertificationById(id);
+                setLoading(true);
+                const data = await getCertificationById(id);
                 setCertification(data);
-                setLoading(false);
             } catch (error) {
                 setError(error.message);
+                console.error('Error al cargar la certificación:', error);
+            } finally {
                 setLoading(false);
-                console.log(error)
             }
         };
 
-        loadCertification();
-        
-    }, [searchParams]);
+        if (id) {
+            loadCertification();
+        }
+    }, [id]);
+
+    const getImageUrl = (url) => {
+        if (!url) return null;
+        return url.startsWith('/') ? url : `/${url}`;
+    };
+
+    if (loading) {
+        return (
+            <div className="container-main-info">
+                <div>Cargando...</div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="container-main-info">
+                <div>Error: {error}</div>
+            </div>
+        );
+    }
+
+    if (!certification) {
+        return (
+            <div className="container-main-info">
+                <div>No se encontró la certificación</div>
+            </div>
+        );
+    }
+
+    if (!loading && !error && certification) {
+        console.log("DATAAAAAAAAAAAAA")
+        console.log(certification);
+        return (
+            <div className="container-main-info">
+                <div className="wrapper-logo-certification">
+                    <img
+                        src={getImageUrl(certification.url_imagen_universidad_certificacion)} />
+
+                </div>
+
+                <div className="wrapper-name-certification">
+                    <h1>{certification.nombre}</h1>
+                </div>
+
+                <div className="container-short-description">
+                    <p>{certification.metadescripcion_certificacion}</p>
+                </div>
+
+                <div className="container-button-url-original">
+                    <button
+                        onClick={() => window.open(certification.url_certificacion_original, '_blank')}
+                        className="button-url-original">Ver en la página oficial</button>
+                </div>
+
+                <div className="container-instructors">
+                    <h2><b>Instructor/es</b></h2>
+
+                    <ul>
+                        {certification.instructores_certificacion.map(instructor => {
+                            return <li key={instructor.name}>{instructor.name}</li>;
+                        })}
+                    </ul>
+
+                </div>
+
+                <div className="container-fast-info">
+                    <div className="fast-info"><h3>Idioma</h3>{certification.lenguaje_certificacion}</div>
+                    <div className="fast-info"><h3>Nivel</h3>{certification.nivel_certificacion}</div>
+                    <div className="fast-info"><h3>Cronograma</h3>{certification.tiempo_certificacion}</div>
+                </div>
+
+                {certification.aprendizaje_certificacion
+                    .filter(aprendizaje => aprendizaje && !aprendizaje.startsWith('x'))
+                    .length > 0 && (
+                        <div className="container-learning">
+                            <h2>¿Qué aprenderás?</h2>
+                            <ul>
+                                {certification.aprendizaje_certificacion
+                                    .filter(aprendizaje => aprendizaje && !aprendizaje.startsWith('x'))
+                                    .map(aprendizaje => (
+                                        <li key={aprendizaje}>{aprendizaje}</li>
+                                    ))}
+                            </ul>
+                        </div>
+                    )}
+
+                <div className="container-modules">
+                    <h2>{certification.cantidad_modulos}</h2>
+                    <p>{certification.contenido_certificacion}</p>
+                </div>
 
 
-    return (
-       <div className="container-main-info">
-            <div className="container-logo-detail"></div>
-            <div className="container-title-certification-detail">
-                <h1>{certification.certification_name}</h1>
-            </div>
-            <button className="button-url-original">Ver en la página oficial</button>
-            <div className="container-instructors">
-                <h3><b>Instructor/es:</b></h3>
-                <ul>
-                    {certification.certification_learnings && Object.entries(certification.certification_learnings).map(([key, learning]) => (
-                        <li key={key}>
-                            {learning}
-                        </li>
-                    ))}
-                </ul>
-            </div>
-            <div className="container-fast-info">
-                <div className="fast-info" id="language-container">
-                    <h3>Idioma</h3>
-                    <span>{certification.certification_languaje}</span>
+               <div className="container-skills">
+    <h2>Habilidades que obtendrás</h2>
+    <div className="container-tag-skills">
+        {Array.isArray(certification.habilidades_certificacion) ? (
+            certification.habilidades_certificacion.map((habilidad, index) => (
+                <div key={index} className="skill-tag">
+                    {habilidad.trim()}  {/* Limpiar espacios extra y saltos de línea */}
                 </div>
-                <div className="fast-info"id="level-container">
-                    <h3>Nivel</h3>
-                    <span>{certification.certification_level}</span>
-                </div>
-                <div className="fast-info" id="duration-container">
-                    <h3>Duración</h3>
-                    <span>{certification.certification_time}</span>
-                </div>
-               
+            ))
+        ) : (
+            <p>No se encontraron habilidades.</p>   
+        )}
+    </div>
+</div>
+
+
+
+
+
+
             </div>
-            <div className="container-learning">
-                <h2>¿Qué aprenderás?</h2>
-                <ul>
-                    {certification.certification_learnings && certification.certification_learnings.map((learning, index) => (
-                        <li key={index}>
-                            {learning}
-                        </li>
-                    ))}
-                </ul>
-            </div>
-            <div className="container-skills">
-            <h2>Habilidades que obtendrás</h2>
-            <div className="container-tags-skills">
-                {certification.certification_skills && certification.certification_skills.map((skill, index) => (
-                    <div className="skill-tag">
-                        <svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="#ffffff"  stroke-width="2"  stroke-linecap="round"  stroke-linejoin="round"  class="icon icon-tabler icons-tabler-outline icon-tabler-check"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 12l5 5l10 -10" /></svg>
-                        {skill}</div>
-                ))}
-            </div>
-            </div>
-       </div>
-    );
+        )
+    }
+
 };
 
 export default CertificationPage;
