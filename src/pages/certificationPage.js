@@ -8,6 +8,9 @@ const CertificationPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    // Estado para calcular el grid de las habilidades
+    const [countSkills, setSkillsCount] = useState(0);
+
     useEffect(() => {
         const loadCertification = async () => {
             try {
@@ -28,6 +31,13 @@ const CertificationPage = () => {
             loadCertification();
         }
     }, [id]);
+
+    useEffect(() => {
+        if (certification && certification.habilidades_certificacion) {
+            const rows = Math.ceil(certification.habilidades_certificacion.length / 4);
+            setSkillsCount(rows);
+        }
+    }, [certification]);
 
     const getImageUrl = (url) => {
         if (!url) return null;
@@ -59,14 +69,13 @@ const CertificationPage = () => {
     }
 
     if (!loading && !error && certification) {
-        console.log("DATAAAAAAAAAAAAA")
-        console.log(certification);
         return (
             <div className="container-main-info">
                 <div className="wrapper-logo-certification">
                     <img
-                        src={getImageUrl(certification.url_imagen_universidad_certificacion)} />
-
+                        src={getImageUrl(certification.url_imagen_universidad_certificacion)} 
+                        alt="Logo de la certificación"
+                    />
                 </div>
 
                 <div className="wrapper-name-certification">
@@ -85,13 +94,11 @@ const CertificationPage = () => {
 
                 <div className="container-instructors">
                     <h2><b>Instructor/es</b></h2>
-
                     <ul>
-                        {certification.instructores_certificacion.map(instructor => {
-                            return <li key={instructor.name}>{instructor.name}</li>;
-                        })}
+                        {certification.instructores_certificacion.map((instructor, index) => (
+                            <li key={index}>{instructor.name}</li>
+                        ))}
                     </ul>
-
                 </div>
 
                 <div className="container-fast-info">
@@ -100,42 +107,43 @@ const CertificationPage = () => {
                     <div className="fast-info"><h3>Cronograma</h3>{certification.tiempo_certificacion}</div>
                 </div>
 
-                {certification.aprendizaje_certificacion
-                    .filter(aprendizaje => aprendizaje && !aprendizaje.startsWith('x'))
-                    .length > 0 && (
+                    .
                         <div className="container-learning">
                             <h2>¿Qué aprenderás?</h2>
                             <ul>
-                                {certification.aprendizaje_certificacion
-                                    .filter(aprendizaje => aprendizaje && !aprendizaje.startsWith('x'))
-                                    .map(aprendizaje => (
-                                        <li key={aprendizaje}>{aprendizaje}</li>
-                                    ))}
+                                {certification.aprendizaje_certificacion.map((aprendizaje, index) => (
+                                    <li key={index}>{aprendizaje.nombre}</li>
+                                ))}
                             </ul>
                         </div>
-                    )}
+                    
 
                 <div className="container-modules">
                     <h2>{certification.cantidad_modulos}</h2>
                     <p>{certification.contenido_certificacion}</p>
                 </div>
 
-
-               <div className="container-skills">
-    <h2>Habilidades que obtendrás</h2>
-    <div className="container-tag-skills"> 
-    </div>
-</div>
-
-
-
-
-
-
+                <div className="container-skills">
+                    <h2>Habilidades que obtendrás</h2>
+                    <div
+                        className="container-tag-skills"
+                        style={{
+                            display: "grid",
+                            gridTemplateColumns: "repeat(4, auto)",
+                            gridTemplateRows: `repeat(${countSkills}, auto)`,
+                            gap: "10px",
+                            width: "100%",
+                            height: "100%"
+                        }}
+                    >
+                        {certification.habilidades_certificacion.map((habilidad, index) => (
+                            <div className="skill-tag" key={index}>{habilidad.nombre}</div>
+                        ))}
+                    </div>
+                </div>
             </div>
-        )
+        );
     }
-
 };
 
 export default CertificationPage;

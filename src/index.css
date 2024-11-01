@@ -1151,7 +1151,7 @@ header {
   position: relative;
   align-items: center;
   flex-direction: column;
-  padding: 15px 0;
+  padding: 2px 0;
   box-sizing: border-box;
   width: 100%;
   height: 200px;
@@ -1164,14 +1164,7 @@ header {
   width: 100%;
 }
 
-.container-tags-skills {
-  display: grid;
-  grid-template-columns: repeat(4, auto);
-  width: 100%;
-  height: 200px;
-  column-gap: 10px;
-  row-gap: 15px;
-}
+
 
 .skill-tag {
   display: flex;
