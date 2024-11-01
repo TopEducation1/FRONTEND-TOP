@@ -14,6 +14,8 @@ const CertificationPage = () => {
                 setLoading(true);
                 const data = await getCertificationById(id);
                 setCertification(data);
+                console.log("INFORMACIÓN ESPECIFICA DE LA CERTIFICACION");
+                console.log(data);
             } catch (error) {
                 setError(error.message);
                 console.error('Error al cargar la certificación:', error);
@@ -121,16 +123,7 @@ const CertificationPage = () => {
 
                <div className="container-skills">
     <h2>Habilidades que obtendrás</h2>
-    <div className="container-tag-skills">
-        {Array.isArray(certification.habilidades_certificacion) ? (
-            certification.habilidades_certificacion.map((habilidad, index) => (
-                <div key={index} className="skill-tag">
-                    {habilidad.trim()}  {/* Limpiar espacios extra y saltos de línea */}
-                </div>
-            ))
-        ) : (
-            <p>No se encontraron habilidades.</p>   
-        )}
+    <div className="container-tag-skills"> 
     </div>
 </div>
 
