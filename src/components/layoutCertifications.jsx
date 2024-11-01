@@ -6,6 +6,7 @@ const CertificationsList = ({ certifications }) => {
 
     const getImageUrl = (url) => {
         if (!url) return null;
+        console.log
         return url.startsWith('/') ? url : `/${url}`;
     };
     

@@ -1,5 +1,9 @@
 // config/api.js
-const API_URL = process.env.REACT_APP_API_URL || 'https://backend-top-production-0f82.up.railway.app';
+// URL PRODUCCIÓN -> https://backend-top-production-0f82.up.railway.app
+// URL LOCAL -> http://127.0.0.1:8000/
+const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000/';
+
+console.log(API_URL);
 
 // Asegurarnos de que la URL base siempre use HTTPS
 const ensureHttps = (url) => {
@@ -16,6 +20,7 @@ const baseConfig = {
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
+    'Origin': 'http://localhost:8080'
   },
   mode: 'cors',
   credentials: 'include',
