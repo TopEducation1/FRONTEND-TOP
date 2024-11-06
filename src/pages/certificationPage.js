@@ -3,11 +3,12 @@ import { useParams } from 'react-router-dom';
 import getCertificationById from "../services/getCertificationById";
 
 const CertificationPage = () => {
+    // Estados de la pagina de certificacion
     const { id } = useParams();
     const [certification, setCertification] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [expandedIndex, setExpandedIndex] = useState(null); // Fixed typo in state name
+    const [expandedIndex, setExpandedIndex] = useState(null); 
     const [countSkills, setSkillsCount] = useState(0);
 
     useEffect(() => {
@@ -176,7 +177,6 @@ const CertificationPage = () => {
                                             </svg>
                                         </div>
                                     </div>
-
                                     {isExpanded && (
                                         <div className="second-row">
                                             <div className="content-module-container">
