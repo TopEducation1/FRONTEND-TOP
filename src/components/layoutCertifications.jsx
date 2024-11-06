@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 
 const CertificationsList = ({ certifications }) => {
     const navigate = useNavigate();
+    // Estado para manejar la carga
+    const [loading, setLoading] = useState(true);
 
     const getImageUrl = (url) => {
         if (!url) return null;

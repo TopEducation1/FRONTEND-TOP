@@ -12,20 +12,24 @@ const fetchConfig = {
 const CertificationsFetcher = {
   async getAllCertifications(page = 1, pageSize = 16) {
     try {
-      const url = new URL(endpoints.certificaciones);
-
-      url.searchParams.append('page', page);
-      url.searchParams.append('page_size', pageSize);
-
-      // Asegurar que la URL use HTTPS
-      const secureUrl = url.toString().replace('http://', 'https://');
+      // Construir la URL manualmente
+      const baseUrl = endpoints.certificaciones;
+      const url = `${baseUrl}?page=${page}&page_size=${pageSize}`;
       
-      const response = await fetch(secureUrl, fetchConfig);
+      console.log('Requesting URL:', url);
+       // Para debugging
+      
+      const response = await fetch(url, fetchConfig);
       
       if (!response.ok) {
-        throw new Error('BAD REQUEST');
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return await response.json();
+
+      const data = await response.json();
+      console.log(data);
+
+      return data;
+      
     } catch (error) {
       console.error('Error fetching certifications:', error);
       throw error;

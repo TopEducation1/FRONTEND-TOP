@@ -8,7 +8,7 @@ const TAG_CATEGORIES =  {
 };
 
 class TagFilterService {
-    constructor(baseUrl = endpoints.certificationes_tags) {
+    constructor(baseUrl = endpoints.certificaciones_tags) {
         this.baseUrl = baseUrl;
     }
 

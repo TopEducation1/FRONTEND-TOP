@@ -10,14 +10,15 @@ import CertificationsList from "../components/layoutCertifications";
 import SearchBar from "../components/searchBar";
 import RoutesComponent from "../components/RoutesComponent";
 
-/**Pagina de la biblioteca */
+/**
+ * Pagina de la biblioteca
+ *  */
 
 function LibraryPage() {
 
     // Estados de la pagina
     const [width, setWidth] = useState(window.innerWidth);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [barSearchPosition, setBarSearchPosition] = useState(true);
     const [openSections, setOpenSections] = useState([]);
     const [selectedTags, setSelectedTags] = useState({});
     const [isMobileView, setIsMobileView] = useState(false);
@@ -26,6 +27,26 @@ function LibraryPage() {
     const [certifications, setCertifications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [isSmallScreen, SetIsSmallSreen] = useState(false);
+
+
+    useEffect(() => {
+
+        const handleRezise = () => {
+            SetIsSmallSreen(window.innerWidth <= 1100);
+
+        }
+
+        window.addEventListener('resize', handleRezise);
+        handleRezise(); // Verificar ancho de la pagina
+
+        return () => {
+            window.removeEventListener('resize', handleRezise);
+        }
+    }, []);
+
+
+
 
     // Estados para la paginación
     const [pagination, setPagination] = useState({
@@ -64,7 +85,6 @@ function LibraryPage() {
                 });
             }
         } catch (error) {
-            console.error('Error al cargar las certificaciones:', error);
             setError('Error al cargar las certificaciones');
         } finally {
             setLoading(false);
@@ -292,6 +312,8 @@ function LibraryPage() {
         });
     };
 
+
+
     return (
         <>
             <div className="title-category">
@@ -364,8 +386,9 @@ function LibraryPage() {
                         <path d="M6 6l12 12" />
                     </svg>
                 </button>
-                <div className="index-container">
-                    {!barSearchPosition && SearchBar}
+
+
+                <div className="index-container">  
                     <div className="category-wrapper">
                         {sections.map((section, index) => (
                             <div
@@ -407,17 +430,79 @@ function LibraryPage() {
                         ))}
                     </div>
                 </div>
+
+                {isSmallScreen && isMenuOpen && (
+                    <div
+                        
+                        className={`container-logo-platforms ${isSmallScreen ? 'small-screen' : ''
+                            }`}
+                    >
+                        
+                        <div className={`wrapper-new-courses ${isSmallScreen ? 'small-screen' : ''
+                            }`}>
+                            <button id="button-new-courses">Nuevo en Top Education</button>
+                        </div>
+
+                        <div className={`wrapper-logos ${isSmallScreen ? 'small-screen' : ''
+                            }`}>
+                            <div className="container-logo">
+                                <img src="assets/logos/coursera-hover.png" />
+                            </div>
+                            <div className="container-logo">
+                                <img src="assets/logos/edx-hover.png" />
+                            </div>
+                            <div className="container-logo">
+                                <img src="assets/logos/masterclass-hover.png" />
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            <div className="certifications-container">
 
+            {!isSmallScreen && (
+                <div
+                id="container-logo-platforms"
+                className={`wrapper-logo-platforms ${isSmallScreen ? 'small-screen' : ''
+                    }`}
+            >
+                <div id="wrapper-logos">
+                    <div className="container-logo">
+                        <img src="assets/logos/coursera-hover.png" />
+                    </div>
+                    <div className="container-logo">
+                        <img src="assets/logos/edx-hover.png" />
+                    </div>
+                    <div className="container-logo">
+                        <img src="assets/logos/masterclass-hover.png" />
+                    </div>
+                </div>
+                <div id="wrapper-new-courses">
+                    <button id="button-new-courses">Nuevo en Top Education</button>
+                </div>
+            </div>
+            )}
+
+     
+                    
+        
+
+
+
+            <div className="certifications-container">
+            { loading ? (
+                <span class="loader"></span>
+
+            ) : (
                 <CertificationsList certifications={certifications} />
+                
+            )}
                 <PaginationControls />
 
             </div>
 
             <div className="container-routes-section">
-                        <RoutesComponent />
+                <RoutesComponent />
             </div>
         </>
     );

@@ -9,6 +9,7 @@ const SearchBar = () => {
     const [error, setError] = useState(null);
     const [results, setResults] = useState([]);
     const [text, setText] = useState('');
+    const [loading, setLoading] = useState(false);
 
 
     // Manejar la escritura en el input 
@@ -30,22 +31,25 @@ const SearchBar = () => {
 
 
             if (!text.trim()) {
-                
+
                 // Vaciar resultados si no hay texto
                 setResults([]);
                 return;
             }
 
             try {
+                setLoading(true);
                 const data = await FilterBySearch.getResults(text);
                 setResults(Array.isArray(data) ? data : []);
                 console.log("ESTE ES EL PUNTO FINAL PARA RECIBIR LA DATA");
                 console.log(data);
+                setLoading(false);
 
             } catch (error) {
                 console.error('Error al enviar datos: ', error);
                 setError(error);
                 setResults([]);
+                setLoading(false);
             }
         };
 
@@ -56,25 +60,7 @@ const SearchBar = () => {
         return () => clearTimeout(timeoutId);
     }, [text]);
 
-    // Manejar el cambio de ancho para controlar la posición de la barra de busqueda
-    useEffect(() => {
 
-
-        const handleResize = () => {
-            const mobilewidth = 1200;
-            setIsMobileView(window.innerWidth <= mobilewidth);
-        };
-
-        handleResize();
-
-        window.addEventListener('resize', handleResize);
-
-        return () => {
-            window.removeEventListener('resize', handleResize);
-        }
-
-
-    }, []);
 
 
     return (
@@ -96,12 +82,13 @@ const SearchBar = () => {
                 >
                     <path d="M790.588 1468.235c-373.722 0-677.647-303.924-677.647-677.647 0-373.722 303.925-677.647 677.647-677.647 373.723 0 677.647 303.925 677.647 677.647 0 373.723-303.924 677.647-677.647 677.647Zm596.781-160.715c120.396-138.692 193.807-319.285 193.807-516.932C1581.176 354.748 1226.428 0 790.588 0S0 354.748 0 790.588s354.748 790.588 790.588 790.588c197.647 0 378.24-73.411 516.932-193.807l516.028 516.142 79.963-79.963-516.142-516.028Z" fillRule="evenodd"></path>
                 </svg>
-
-
+                {loading && <span className="loader-search"></span>}
             </div>
+            
+
+            
 
             {text.trim() && results.length > 0 && (
-
                 <div className="container-results">
                     {results.map((resultado) => (
                         <div key={resultado.id} className="box-result">
@@ -113,8 +100,11 @@ const SearchBar = () => {
                         </div>
                     ))}
                 </div>
+            )
 
-            )}
+
+
+            }
 
 
 
